@@ -1,32 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>MCGG Guess Game</title>
+  <title>MCGG Game</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <h1>🎮 MCGG Guess Game</h1>
 
-<div class="topbar">
-  <button onclick="openForm()">➕ Add Player</button>
-  <button onclick="loadPlayers()">🔄 Refresh</button>
-</div>
+<button onclick="openForm()">➕ Add Player</button>
 
-<div class="stats">
-  💰 Total Pot: <span id="pot">0</span>
-</div>
+<div>💰 Pot: <span id="pot">0</span></div>
 
-<div id="formContainer"></div>
-<div id="checkerPanel"></div>
-<div id="playersContainer"></div>
+<div id="form"></div>
+<div id="checker"></div>
+<div id="players"></div>
 
 <h2>🏆 Scores</h2>
-<table id="scoreTable"></table>
+<table id="scores"></table>
 
-<script src="script.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
