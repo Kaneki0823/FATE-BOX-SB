@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbxy2WVPfqejLmTFh6LPlS-_8gIcxIBQvfnXIts6OALXLNiQ8R8DbZq-mRxJRh2Go5K8/exec";
+  https://script.google.com/macros/s/AKfycbxmYurPZmpzeGLeoYCJXdRCNV1ae06oXMwZAf-hLXLXBtzgyVlQP2DfRCu-ZExqVgZ_/exec
 
 //////////////////////////////////////////////////////
 // 🎯 DATA
