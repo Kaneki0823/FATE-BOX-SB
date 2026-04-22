@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MCGG Game</title>
-  <style>
-    body { font-family: Arial; background:#111; color:white; padding:20px; }
-    .card { background:#222; padding:10px; margin:10px 0; border-radius:10px; }
-    button { margin:5px; padding:6px 10px; cursor:pointer; }
-    input { display:block; margin:5px 0; padding:6px; width:200px; }
-  </style>
+  <title>Fate Box SB</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<h2>🎮 MCGG Guess Game</h2>
+<h1>🎮 MCGG SB FB</h1>
 
 <button onclick="openForm()">➕ Add Player</button>
 
+<div>💰 Pot: <span id="pot">0</span></div>
+
 <div id="form"></div>
+
+<h2>👥 Players</h2>
 <div id="players"></div>
 
-<!-- Firebase (IMPORTANT: compat version) -->
+<h2>🎯 Checker Panel</h2>
+<div id="checker"></div>
+
+<h2>🏆 Scores</h2>
+<table id="scores"></table>
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
