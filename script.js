@@ -1,275 +1,201 @@
-//////////////////////////////////////////////////////
-// 🔗 GOOGLE SHEETS BACKEND
-//////////////////////////////////////////////////////
+// 🔥 FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyCdZb1-Wd_zDE3-WqyqtNISpX2Iji9ihCU",
+  authDomain: "sb-fb-4cd02.firebaseapp.com",
+  databaseURL: "https://console.firebase.google.com/project/sb-fb-4cd02/database/sb-fb-4cd02-default-rtdb/data/~2F",
+  projectId: "sb-fb-4cd02"
+};
 
-const API_URL =
-  https://script.google.com/macros/s/AKfycbxmYurPZmpzeGLeoYCJXdRCNV1ae06oXMwZAf-hLXLXBtzgyVlQP2DfRCu-ZExqVgZ_/exec
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-//////////////////////////////////////////////////////
-// 🎯 DATA
-//////////////////////////////////////////////////////
+let players = {};
 
-let players = [];
-
-const HEROES = [
-  "Miya","Karina","Harith","Masha","Aulus","Julian","Saber","Minotaur",
-  "Khufra","Gloo","Xavier","Freddrin","Hayabusa","Roger","Gusion",
-  "Esmeralda","Barats","Valentina","Cyclops","Pharsa","Hanabi",
-  "Yu Zhong","Terry Bogart","Floryn","Rafaela","Ruby","Lesley",
-  "Ling","Edith","Chou","Lancelot","Valir","Benedetta"
-];
-
-const ITEMS = [
-  "Blade of Despair","Demon Hunter Sword","Sea Halberd","Golden Staff",
-  "Berserker's Fury","Haas's Claws","War Axe","Enchanted Talisman",
-  "Feather of Heaven","Glowing Wand","Ice Queen Wand","Holy Crystal",
-  "Blade Armor","Guardian Helmet","Antique Cuirass","Brute Force Breastplate",
-  "Oracle","Dominance Ice","Winter Crown","Purple Buff"
-];
+const HEROES = ["Miya","Karina","Gusion","Chou","Ling"];
+const ITEMS = ["Blade of Despair","War Axe","Hunter Strike"];
 
 //////////////////////////////////////////////////////
-// 🔄 LOAD
+// 🔄 LISTEN REALTIME
 //////////////////////////////////////////////////////
 
-async function loadPlayers() {
-  try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
-
-    players = Array.isArray(data) ? data : [];
-
-    renderPlayers();
-    updatePot();
-    updateScores();
-    renderCheckerPanel();
-
-  } catch (err) {
-    console.error("Load error:", err);
-    players = [];
-    renderPlayers();
-  }
-}
+db.ref("players").on("value", snap => {
+  players = snap.val() || {};
+  render();
+});
 
 //////////////////////////////////////////////////////
-// 💾 SAVE TO SHEETS
+// ➕ ADD / EDIT PLAYER
 //////////////////////////////////////////////////////
 
-async function saveToSheet(payload) {
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  });
-}
+function openForm(id = null) {
+  const p = players[id] || {};
 
-//////////////////////////////////////////////////////
-// ➕ FORM
-//////////////////////////////////////////////////////
-
-function openForm(index = null) {
-  const p = index !== null ? players[index] : null;
-
-  document.getElementById("formContainer").innerHTML = `
+  document.getElementById("form").innerHTML = `
     <div class="card">
+      <input id="name" placeholder="Name" value="${p.name || ""}">
+      <input id="bet" type="number" placeholder="Bet" value="${p.bet || 0}">
 
-      <input id="name" placeholder="Name" value="${p?.name || ""}">
-      <input id="bet" type="number" placeholder="Bet" value="${p?.bet || 0}">
+      ${roundUI(1,p)}
+      ${roundUI(2,p)}
+      ${roundUI(3,p)}
+      ${roundUI(4,p)}
 
-      ${createRound(1,p)}
-      ${createRound(2,p)}
-      ${createRound(3,p)}
-      ${createRound(4,p)}
-
-      <button onclick="savePlayer(${index ?? "null"})">💾 Save</button>
-      <button onclick="closeForm()">❌ Cancel</button>
-
+      <button onclick="save('${id || ""}')">Save</button>
     </div>
   `;
 }
 
-function createRound(n,p){
+function roundUI(n,p){
   return `
     <b>Round ${n}</b>
 
-    <select class="r${n}h">
-      <option value="">Hero</option>
-      ${HEROES.map(h =>
-        `<option ${p?.rounds?.[n-1]?.[0]===h?"selected":""}>${h}</option>`
-      ).join("")}
+    <select class="h${n}">
+      ${HEROES.map(h=>`<option ${p?.rounds?.[n-1]?.[0]==h?"selected":""}>${h}</option>`)}
     </select>
 
-    <select class="r${n}i">
-      <option value="">Item</option>
-      ${ITEMS.map(i =>
-        `<option ${p?.rounds?.[n-1]?.[1]===i?"selected":""}>${i}</option>`
-      ).join("")}
+    <select class="i${n}">
+      ${ITEMS.map(i=>`<option ${p?.rounds?.[n-1]?.[1]==i?"selected":""}>${i}</option>`)}
     </select>
   `;
 }
 
-function closeForm(){
-  document.getElementById("formContainer").innerHTML = "";
-}
-
 //////////////////////////////////////////////////////
-// 💾 SAVE PLAYER
+// 💾 SAVE TO FIREBASE
 //////////////////////////////////////////////////////
 
-async function savePlayer(index) {
-  const form = document.getElementById("formContainer");
-
+function save(id){
   const player = {
-    name: form.querySelector("#name").value.trim(),
-    bet: Number(form.querySelector("#bet").value || 0),
-
+    name: name.value,
+    bet: Number(bet.value),
     rounds: [
-      [form.querySelector(".r1h").value, form.querySelector(".r1i").value],
-      [form.querySelector(".r2h").value, form.querySelector(".r2i").value],
-      [form.querySelector(".r3h").value, form.querySelector(".r3i").value],
-      [form.querySelector(".r4h").value, form.querySelector(".r4i").value]
+      [h1.value,i1.value],
+      [h2.value,i2.value],
+      [h3.value,i3.value],
+      [h4.value,i4.value]
     ],
-
-    marks: index !== null && players[index]?.marks
-      ? players[index].marks
-      : [[0,0],[0,0],[0,0],[0,0]]
+    marks: [[0,0],[0,0],[0,0],[0,0]]
   };
 
-  if (!player.name) return alert("Enter name");
+  if(id){
+    db.ref("players/"+id).set(player);
+  } else {
+    db.ref("players").push(player);
+  }
 
-  await saveToSheet({
-    action: index !== null ? "update" : "add",
-    index,
-    player
-  });
-
-  closeForm();
-  loadPlayers();
+  document.getElementById("form").innerHTML="";
 }
 
 //////////////////////////////////////////////////////
-// 📦 RENDER PLAYERS
+// 📦 RENDER
 //////////////////////////////////////////////////////
 
-function renderPlayers() {
-  const container = document.getElementById("playersContainer");
-  container.innerHTML = "";
+function render(){
+  let html="";
 
-  players.forEach((p,i)=>{
+  let pot = 0;
+  let scores = [];
 
-    const rounds = p.rounds || [[],[],[],[]];
+  Object.entries(players).forEach(([id,p])=>{
 
-    let html = `
-      <div class="card">
-        <b>${p.name || "No Name"}</b> (Bet: ${p.bet || 0})
-
-        <div id="r-${i}" style="display:none;">
-    `;
-
-    rounds.forEach((r,ri)=>{
-      html += `
-        <b>Round ${ri+1}</b>
-
-        <div class="guess">
-          <span>${r?.[0] || ""}</span>
-          <button onclick="mark('${r?.[0]}',1)">✔</button>
-          <button onclick="mark('${r?.[0]}',-1)">✖</button>
-        </div>
-
-        <div class="guess">
-          <span>${r?.[1] || ""}</span>
-          <button onclick="mark('${r?.[1]}',1)">✔</button>
-          <button onclick="mark('${r?.[1]}',-1)">✖</button>
-        </div>
-      `;
-    });
+    pot += Number(p.bet || 0);
 
     html += `
-        </div>
+      <div class="card">
+        <b>${p.name}</b> (${p.bet})
 
-        <button onclick="toggle(${i})">👁</button>
-        <button onclick="openForm(${i})">✏️</button>
-        <button onclick="removePlayer(${i})">🗑</button>
+        <button onclick="openForm('${id}')">Edit</button>
+        <button onclick="remove('${id}')">Remove</button>
+
+        ${p.rounds.map((r,i)=>`
+          <div class="guess">
+            <span>${r[0]}</span>
+            <button onclick="mark('${id}',${i},0,1)">✔</button>
+            <button onclick="mark('${id}',${i},0,-1)">✖</button>
+          </div>
+
+          <div class="guess">
+            <span>${r[1]}</span>
+            <button onclick="mark('${id}',${i},1,1)">✔</button>
+            <button onclick="mark('${id}',${i},1,-1)">✖</button>
+          </div>
+        `).join("")}
+
       </div>
     `;
-
-    container.innerHTML += html;
-  });
-}
-
-//////////////////////////////////////////////////////
-// 👁 TOGGLE
-//////////////////////////////////////////////////////
-
-function toggle(i){
-  const el=document.getElementById(`r-${i}`);
-  if(!el) return;
-  el.style.display = el.style.display==="none"?"block":"none";
-}
-
-//////////////////////////////////////////////////////
-// 🗑 REMOVE (FIXED: NO RE-ADD BUG)
-//////////////////////////////////////////////////////
-
-async function removePlayer(i){
-  await saveToSheet({
-    action:"delete",
-    index:i
   });
 
-  loadPlayers();
+  playersDiv.innerHTML = html;
+  potEl.innerText = pot;
+
+  renderChecker();
+  renderScores();
 }
 
 //////////////////////////////////////////////////////
-// ✔ MARK SYSTEM
+// 🗑 REMOVE
 //////////////////////////////////////////////////////
 
-function mark(value,state){
-  if(!value) return;
+function remove(id){
+  db.ref("players/"+id).remove();
+}
 
-  players.forEach(p=>{
-    p.rounds?.forEach((r,ri)=>{
-      r?.forEach(g=>{
-        if(g===value){
-          if(!p.marks) p.marks=[[0,0],[0,0],[0,0],[0,0]];
-          p.marks[ri][0]=state;
-        }
+//////////////////////////////////////////////////////
+// ✔ MARK
+//////////////////////////////////////////////////////
+
+function mark(id,round,type,state){
+  const p = players[id];
+  if(!p.marks) p.marks=[[0,0],[0,0],[0,0],[0,0]];
+
+  p.marks[round][type] = state;
+
+  db.ref("players/"+id).update({marks:p.marks});
+}
+
+//////////////////////////////////////////////////////
+// 🎯 CHECKER PANEL
+//////////////////////////////////////////////////////
+
+function renderChecker(){
+  let rounds=[[],[],[],[]];
+
+  Object.values(players).forEach(p=>{
+    p.rounds.forEach((r,i)=>{
+      r.forEach(g=>{
+        if(!rounds[i].includes(g)) rounds[i].push(g);
       });
     });
   });
 
-  saveToSheet({action:"bulk",players});
-  loadPlayers();
+  let html="<div class='card'><h2>Checker</h2>";
+
+  rounds.forEach((r,i)=>{
+    html+=`<h3>Round ${i+1}</h3>`;
+    r.forEach(g=>{
+      html+=`<div class="guess">${g}</div>`;
+    });
+  });
+
+  checker.innerHTML=html+"</div>";
 }
 
 //////////////////////////////////////////////////////
-// 💰 POT
+// 🏆 SCORES
 //////////////////////////////////////////////////////
 
-function updatePot(){
-  const el=document.getElementById("pot");
-  if(!el) return;
-  el.innerText = players.reduce((a,p)=>a+(p.bet||0),0);
-}
-
-//////////////////////////////////////////////////////
-// 🧠 SCORES
-//////////////////////////////////////////////////////
-
-function updateScores(){
-  const table=document.getElementById("scoreTable");
-  if(!table) return;
-
-  const scores = players.map(p=>{
+function renderScores(){
+  let arr = Object.values(players).map(p=>{
     let s=0;
-    p.marks?.forEach(r=>r.forEach(m=>m===1&&s++));
+    p.marks?.forEach(r=>r.forEach(v=>v===1&&s++));
     return {name:p.name,score:s};
   });
 
-  const max=Math.max(...scores.map(s=>s.score),0);
+  let max=Math.max(...arr.map(a=>a.score),0);
 
-  table.innerHTML=`<tr><th>Name</th><th>Score</th><th>Status</th></tr>`;
+  scores.innerHTML="<tr><th>Name</th><th>Score</th><th>Status</th></tr>";
 
-  scores.forEach(s=>{
-    table.innerHTML+=`
+  arr.forEach(s=>{
+    scores.innerHTML+=`
       <tr>
         <td>${s.name}</td>
         <td>${s.score}</td>
@@ -278,52 +204,3 @@ function updateScores(){
     `;
   });
 }
-
-//////////////////////////////////////////////////////
-// 🎯 CHECKER PANEL (FIXED + ALWAYS SHOWS)
-//////////////////////////////////////////////////////
-
-function renderCheckerPanel(){
-  const container=document.getElementById("checkerPanel");
-  if(!container) return;
-
-  if(!players.length){
-    container.innerHTML=`<div class="card"><h2>🎯 Checker Panel</h2><p>No players yet</p></div>`;
-    return;
-  }
-
-  const rounds=[[],[],[],[]];
-
-  players.forEach(p=>{
-    p.rounds?.forEach((r,i)=>{
-      r?.forEach(g=>{
-        if(g && !rounds[i].includes(g)) rounds[i].push(g);
-      });
-    });
-  });
-
-  let html=`<div class="card"><h2>🎯 Checker Panel</h2>`;
-
-  rounds.forEach((r,ri)=>{
-    html+=`<h3>Round ${ri+1}</h3>`;
-
-    r.forEach(g=>{
-      html+=`
-        <div class="guess">
-          <span>${g}</span>
-          <button onclick="mark('${g}',1)">✔</button>
-          <button onclick="mark('${g}',-1)">✖</button>
-        </div>
-      `;
-    });
-  });
-
-  html+=`</div>`;
-  container.innerHTML=html;
-}
-
-//////////////////////////////////////////////////////
-// 🚀 START
-//////////////////////////////////////////////////////
-
-loadPlayers();
