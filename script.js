@@ -1,4 +1,4 @@
-
+console.log("APP LOADED");
 // 🔥 FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyCdZb1-Wd_zDE3WqyqtNISpX2Iji9ihCU",
