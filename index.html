@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MCGG Guess Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>🎮 MCGG Guess Game</h1>
+
+<div class="topbar">
+  <button onclick="openForm()">➕ Add Player</button>
+  <button onclick="loadPlayers()">🔄 Refresh</button>
+</div>
+
+<div class="stats">
+  💰 Total Pot: <span id="pot">0</span>
+</div>
+
+<div id="formContainer"></div>
+<div id="checkerPanel"></div>
+<div id="playersContainer"></div>
+
+<h2>🏆 Scores</h2>
+<table id="scoreTable"></table>
+
+<script src="script.js"></script>
+
+</body>
+</html>
